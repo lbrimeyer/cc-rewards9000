@@ -1,0 +1,7 @@
+## Terraform
+.terraform
+backend.tf
+
+## Temp Files
+*.swp
+*.idea
