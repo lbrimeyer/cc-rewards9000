@@ -8,4 +8,4 @@ backend.tf
 
 /client/.cache/
 /client/node_modules/
-/client/.cache
+/client/dist
