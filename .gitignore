@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 ## Terraform
 .terraform
 backend.tf
@@ -9,3 +10,8 @@ backend.tf
 /client/.cache/
 /client/node_modules/
 /client/dist
+=======
+client/.cache
+client/node_modules
+client/dist
+>>>>>>> chore: clean up init build
