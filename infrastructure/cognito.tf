@@ -50,6 +50,29 @@ data "aws_iam_policy_document" "cognito_authenticated_assume_role" {
   }
 }
 
+## Authenticated role needs to invoke GraphQL lambda
+data "aws_iam_policy_document" "cognito_authenticated_role" {
+  statement {
+    effect  = "Allow"
+    actions = [
+      "lambda:invokefunction"
+    ]
+    resources = [aws_lambda_function.graphql.arn]
+  }
+}
+
+resource "aws_iam_policy" "cognito_authenticated_role_policy" {
+  name = "Cognito${var.cognito_pool_name}Authenticated_Role"
+  policy = data.aws_iam_policy_document.cognito_authenticated_role.json
+  path = "/"
+  description = "Role policy for Cognito ${var.cognito_pool_name} Authorized users"
+}
+
+resource "aws_iam_role_policy_attachment" "attach_authenticated_policy_to_role" {
+  policy_arn = aws_iam_policy.cognito_authenticated_role_policy.arn
+  role = aws_iam_role.cognito_authenticated.name
+}
+
 ## Unauthenticated Role
 resource "aws_iam_role" "cognito_unauthenticated_role" {
   name = "Cognito${var.cognito_pool_name}UnauthorizedRole"
