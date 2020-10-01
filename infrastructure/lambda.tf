@@ -22,15 +22,27 @@ resource "aws_cloudwatch_log_group" "lambda" {
   retention_in_days = 7
 }
 
-resource "aws_iam_policy" "lambda_policy" {
+resource "aws_iam_policy" "lambda_logging_policy" {
   name        = "${var.app_name}-lambda-logging"
   path        = "/service-role/"
-  description = "IAM Policy for ${var.app_name}-lambda-logging"
-  policy      = data.aws_iam_policy_document.lambda_policy.json
+  description = "${var.app_name} GraphQL Lambda logging IAM Policy"
+  policy      = data.aws_iam_policy_document.lambda_logging_policy.json
 }
 
-resource "aws_iam_role_policy_attachment" "attach_to_lambda_role" {
-  policy_arn = aws_iam_policy.lambda_policy.arn
+resource "aws_iam_role_policy_attachment" "attach_logging_policy_to_lambda_role" {
+  policy_arn = aws_iam_policy.lambda_logging_policy.arn
+  role       = aws_iam_role.graphql.name
+}
+
+resource "aws_iam_policy" "lambda_ddb_policy" {
+  name        = "${var.app_name}-lambda-ddb"
+  path        = "/service-role/"
+  description = "${var.app_name} GraphQL Lambda DynamoDB IAM Policy"
+  policy      = data.aws_iam_policy_document.lambda_ddb_policy.json
+}
+
+resource "aws_iam_role_policy_attachment" "attach_ddb_policy_to_lambda_role" {
+  policy_arn = aws_iam_policy.lambda_ddb_policy.arn
   role       = aws_iam_role.graphql.name
 }
 
@@ -49,7 +61,7 @@ resource "aws_lambda_function" "graphql" {
   }
 }
 
-data "aws_iam_policy_document" "lambda_policy" {
+data "aws_iam_policy_document" "lambda_logging_policy" {
   version   = "2012-10-17"
   policy_id = "PolicyForGraphQLLambdaLogging"
   statement {
@@ -60,5 +72,20 @@ data "aws_iam_policy_document" "lambda_policy" {
     ]
     effect    = "Allow"
     resources = ["arn:aws:logs:*:*:*"]
+  }
+}
+
+data "aws_iam_policy_document" "lambda_ddb_policy" {
+  version   = "2012-10-17"
+  policy_id = "PolicyForGraphQLLambdaDDB"
+  statement {
+    actions = [
+      "dynamodb:GetRecords",
+      "dynamodb:DeleteItem",
+      "dynamodb:PutItem",
+      "dynamodb:BatchWriteItem",
+    ]
+    effect    = "Allow"
+    resources = [aws_dynamodb_table.ddb_source.arn]
   }
 }
